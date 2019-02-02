@@ -1,0 +1,258 @@
+mockaroo.com - create DB / dummy data in an instant
+sqlitebrowser.org - free DB
+
+
+
+programming foundations : Databases
+-----
+statement are composed of clauses.
+each sql line is a clauses (e.g SELECT * FROM PEOPLE)
+
+Keyword tell the database to take some action (e.g SELECT, FROM,WHERE)
+Predicates - conditions and expressions represent values
+WHERE state='CA' - state = Predicates , 'CA' is expression
+Operatos allow comparisons
+
+statements must end with a semicolon.
+
+SELECT 'first_name' from people - will print out first_name for each row return from the table
+LIMIT - finish the query after N number of hits
+OFFSET - with limit will skip N number of rows so the limit function can get data starting from someother row.
+ORDER BY [FIELD name] - ASC , DESC
+
+
+CROSS JOIN - For every row in the left table, retrieve the row on the right table- SELECT * FROm people join STATES
+(INNER) join - join 2 table for a given criteria. Joining records together and equates it to the other table data
+in the left table to the right table - SELECT * FROM people JOIN STATES on people.state=states.abbr;
+
+LEFT (OUTER) JOIN - all of the data from one table or the other
+ - SELECT * FROM people LEFT JOIN states ON people.state=states.abbr;
+ 
+ RIGHT (OUTHER)JOIN - 
+ SELECT * FROM people RIGHT JOIN states ON people.state=states.abbr;
+ 
+ For outher join, if there is no match , the data would just be filled with a null
+ 
+ FULL OUTHER JOIN - row representing each record in both tables.
+ gives matches and unmatched record in the result.
+ SELECT * FROM people FULL OUTER JOIN
+ states ON people.state = states.abbr;
+ 
+ 
+ INSERT INTO tablename (field1, field2)
+ VALUES (value1, value2)
+ 
+ INSERT INTO people(first_name,last_name)
+ VALUE ('George','White'),('Jenn','Smith'),('Carol', 'Anderson')
+ This is how to input multiple row into the DB
+ 
+ UPDATE tablename SET field1=value1,
+ field2=value2 where condition;
+ 
+ DELETE FROM tablename WHERE condition;
+ 
+ 
+ LOCATE will allow you to search a string inside a string. This will return the position of the text start
+ it will return 0 if it does not found any
+ SELECT LOCATE('string', column) FROM actor
+ 
+ 
+ finding records that are last updated in 2016
+ MY SQL only
+ Select * from actor
+ where year(last_update) = 2006
+ 
+ 
+ Extract dates from a field with date and time
+ MY SQL only
+ Select * from actor
+ where DATE(last_update)= '2016-02-15'
+ 
+ Extract the data from the table.
+ Select date_format(last_update, '%m-%d-%y)
+ from actor
+ 
+
+SQL patter
+SELECT
+FROM
+WHERE
+GROUP BY 
+HAVING
+ORDER BY
+
+Retrieve the district that are more than 8 
+select district
+from address
+group by district
+having count(distrcit) > 8
+order by count(district) DESC
+
+usually you should have the column name that you want to group by in the select statement
+
+select distinct district, group_concat(phone ORDER by phone ASC separator ';')
+from address
+group by district
+
+
+
+if we want to find a record in a tableA but not the one that have reference in the tableB
+So we only want table A minus the inteersect between tableA and tableB
+select * from tableA left join tableB where tableA.id is NULL.
+
+
+UNION - merge rows from 2 table into 1.
+By default UNION will do select distinct
+
+select date(last_update) from tableA
+UNION
+select date(last_update) from address
+
+If we use UNION ALL, it will retrieve all table in tableA and tableB.
+
+
+you can use SELECT 'table' as tbl to show a column to distinguish which table that the retrieve comes.
+
+
+
+find all rental record that jennifer have 
+select * from rental
+where customer_id IN (
+select customer_id FROM customer where
+first_name = 'Jennifer')
+
+
+VIEW
+a view is a stored query
+SHOW create VIEW [view name] - show the statement that create the view
+CREATE view - create a view
+
+you can join VIEW to VIEW or tables.
+
+FUNCTION
+SHOW CREAT FUNCTION [function name]- show the statement that create the function
+CREATE function [function name] - to create function
+
+Main body of the function
+BEGIN
+{code}
+END
+
+DECLARE v_customer_id INT; - declare variable of v_customer_id and its an integer
+DECLARE EXIT_HANDLER FOR NOT FOUND RETURN NULL; - declaring exit handler, what the system need to do if something goes wrong. in this case exit handler is triggered when no row is found.
+
+RETURN v_customer_id - return of the function
+
+to call function:
+SELECT [function name] (input)
+
+
+SELECT email from customer
+where [function name](input) = customer_id
+
+using functions can be used instead of subquery or nested query
+
+Stored procedures usually is used to delete or update.
+But it can also be used to return a query
+
+Stored procedures have parameters
+In and out parameters
+you can use function in stored procedure but not the other way around
+
+to call a stored procedure
+CALL [procedure name](parameters)
+
+
+----
+variance
+VAR_POP(column)
+finding the variance of the data in a specific column
+
+Standard deviation
+STDDEV_POP(column)
+finding a standard deviation of the column
+
+
+
+ROUND(column / function , x)
+round the column or result of the function to a X decimal place
+
+
+(job_title like '%Assistant%') is_asst
+from
+staff
+Will return true if the job_title have assistant in it and false otherwise
+
+
+OVERLAY
+OVERLAY(fieldname PLACING stringtooverlay FROM X to Y)
+the result from the relevant fieldname from position X to Y will be replaced by the stringoverlay
+	
+
+SIMILAR TO
+job_title SIMILAR TO '%Assistant%(III|IV)'
+
+will search job_title where the string have Assistant in it and III or IV.
+
+job_title SIMILAR TO '%Assistant%(I_)'
+This will match job_title with Assistant in it and the level that starts with I and followed by any character behind it.
+So it matches II or IV.
+
+job_title SIMILAR TO '[EPS]%'
+will search job_title that starts with E, P or S
+
+
+CEALING
+will return the next largest integer of a column / function
+
+TRUNC
+will remove the result to a specific number of decimal places
+
+
+
+
+Grouping sets
+grouping sets will return data separated in the column of which the grouping sets is declared.
+ie. if we want to find out the number of employee for each division and region
+we would do it like
+SELECT
+company_division,
+company_region
+count(*)
+FROM
+staff_div_reg
+GROUP BY
+GROUPING SETS (company_divion), company_region)
+ORDER BY
+company_region, company_division
+
+	
+
+ROLLUP 
+will calculate sums in the grouping you have already selected
+
+SELECT
+company_region, country, count(*)
+FROM
+staff_div_reg_country
+GROUP BY
+ROLLUP(country,company_regions)
+ORDER BY
+country,company_regions
+
+CUBE
+will try to create all possible combinations of sets of grouping column.
+e.g for each division show results by region
+
+SELECT
+company division,company region, count(*)
+FROM
+staff_div_reg_country
+GROUP BY
+CUBE(company_divison, company_region)
+
+company_divison||company_region||count(*)
+division A | Region A | XX |
+divison A | Region B | XX |
+...
+divison A | | Total of all of division A|
